@@ -65,7 +65,9 @@ if ($write_rss) {
 
   my $dc = $response->decoded_content;  # this needs to go into a file for XML::RSS::Parser
 
-  open (FILE, "+>/tmp/jira_dc.rss") or die("kaboom: /tmp/jira_dc.rss $!");
+  $rss_file = "/tmp/jira_dc.rss" unless $rss_file;
+
+  open (FILE, "+>$rss_file") or die("kaboom: $rss_file $!");
 
   print FILE $dc;
 
