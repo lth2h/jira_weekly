@@ -2,8 +2,7 @@ sub username { return "myusername"; }
 sub password { return "mypassword"; }
 
 sub getstaff {
-    my %staff = ("John Doe" => "JD", "Jane Doe" => "JJD", "Wizkid Employee" => "WKE", "Employee One" => "EO", "THE Adminis\
-trator" => "THE ADMIN");  
+    my %staff = ("John Doe" => "JD", "Jane Doe" => "JJD", "Wizkid Employee" => "WKE", "Employee One" => "EO", "THE Administrator" => "THE ADMIN");  
     return %staff;
 }
 
