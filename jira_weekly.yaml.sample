@@ -1,0 +1,16 @@
+---
+username: myusername
+password: mypassword
+
+staff:
+  "John Doe": "JD"
+  "Jane Doe": "JJD"
+  "Wizkid Employee": "WKE"
+  "Employee One Seventy Five": "E175"
+  "THE Administrator": "THE ADMIN"
+
+# best to get the filter from the URL used in the Activity Stream
+filter: "user+IS+myusername+anotherusername+yetanotherusername"
+#    "key+IS+PROJECTA+PROJECTB+PROJECTC";
+
+jira_domain: my-jira-domain.atlassian.net

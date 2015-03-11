@@ -21,6 +21,9 @@ use Date::Calc qw(Delta_Days);
 use JIRA::Client::Automated;
 use Sort::Naturally;
 
+use YAML;
+use File::Slurp;
+
 use Getopt::Long;
 
 my ($verbose, $debug, $dry);
@@ -46,16 +49,17 @@ GetOptions(
 
 my $hs = HTML::Strip->new();
 
-#TODO: make conf file simpler
-require "jira_weekly.conf";
+my $yaml;
+$yaml = read_file("jira_weekly.yaml");
 
-my $username = username();
-my $password = password();
-my %staff = getstaff(); # should return a hash like {"Employee Name" => "Initials", }
-my $filter = getfilter(); # the string for the streams filter in the jira url
-my $jira_domain = getjiradomain();
+my %yh = %{Load($yaml)}; # the yaml hash
 
-# the real one
+my $username = $yh{"username"};
+my $password = $yh{"password"};
+my %staff = %{$yh{"staff"}};
+my $filter = $yh{"filter"};
+my $jira_domain = $yh{"jira_domain"};
+
 my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&streams=$filter&os_authType=basic&title=undefined";
 
 if ($write_rss) {
