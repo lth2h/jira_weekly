@@ -13,4 +13,7 @@ staff:
 filter: "user+IS+myusername+anotherusername+yetanotherusername"
 #    "key+IS+PROJECTA+PROJECTB+PROJECTC";
 
-jira_domain: my-jira-domain.atlassian.net
+jira_domain: my-jira-domain.atlassian.net 
+
+dproject: default_project
+dparent: default_parent_task

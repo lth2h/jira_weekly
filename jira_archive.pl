@@ -11,11 +11,15 @@ use POSIX;
 
 use Term::ANSIColor;
 
-my ($verbose, $debug, $dry, $help);
+use YAML;
+use File::Slurp;
+
+my ($verbose, $debug, $dry, $help, $quiet);
 my ($archive, $create);
 my ($parent, $project, $summary, $description);
 my $test;
 my ($dparent, $dproject, $dsummary, $ddescription);
+my $yorn;
 
 GetOptions(
 	   "verbose" => \$verbose,
@@ -29,6 +33,7 @@ GetOptions(
 	   "description=s" => \$description,
 	   "test" => \$test,
 	   "dry-run" => \$dry,
+	   "quiet" => \$quiet,
 );
 
 if ($help) { usage(); exit;}
@@ -40,10 +45,14 @@ my $month = $abbr[$mon];
 my $day = $mday;
 $year += 1900;
 
-require "jira_weekly.conf";
-my $username = username();
-my $password = password();
-my $jira_domain = getjiradomain();
+my $yaml;
+$yaml = read_file("jira_weekly.yaml");
+
+my %yh = %{Load($yaml)};
+
+my $username = $yh{"username"};
+my $password = $yh{"password"};
+my $jira_domain = $yh{"jira_domain"};
 
 if ($test) {
 
@@ -54,8 +63,8 @@ if ($test) {
 
 } else {
 
-  $dparent = get_dparent();
-  $dproject = get_dproject();
+  $dparent = $yh{"dparent"};
+  $dproject = $yh{"dproject"};
   $dsummary = "Weekly Report - $month $day, $year";
   $ddescription = "Weekly Report";
 
@@ -84,6 +93,11 @@ if ((!$archive) && (!$create)) {
 if ($archive) {
   pc("Using $filename", $normcol) if $debug;
 
+  if (!(-f $filename)) { 
+    pc("$filename doesn't exist", $errcol); 
+    exit;
+  }
+
   my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat($filename);
 
   my $days = ceil((time() - $mtime)/(60*60*24));
@@ -100,14 +114,16 @@ if ($archive) {
 
   pc("Display contents (Y/n)?", $normcol);
 
-  my $yorn = <>;
+  $yorn = <>;
   chomp($yorn);
   if ($yorn ne "n") {
     print "\n";
     display_file($filename);
   }
 
+
   pc("Proceed to Archive (Y/n)?", $normcol);
+  pc("DRYRUN: will not actually archive if you choose Y", $drycol);
   $yorn = <>;
   chomp($yorn);
   if ($yorn eq "n") {
@@ -123,7 +139,7 @@ if ($archive) {
     # fetch_issue($_) if $debug;
 
     if (!$dry) {
-      pc("archiving $_", $bugcol) if $debug;
+      pc("archiving $_", $bugcol) unless $quiet;
       $jira->transition_issue($_, "Archived");
 
     } else {
@@ -148,7 +164,7 @@ if ($create) {
   pc("Creating $project, $summary, $description as subtask of $parent", $normcol);
   pc("Proceed? (Y/n)?", $normcol);
 
-  my $yorn = <>;
+  $yorn = <>;
   chomp($yorn);
 
   if ($yorn ne "n") {
@@ -184,7 +200,7 @@ if ($create) {
 
 
   if (!$dry) {
-    pc("update to Done", $normcol);
+    pc("update " . $subtask->{'key'} . " to Done", $normcol);
     $jira->transition_issue($subtask->{'key'}, "Done");
   } else {
     pc("DRYRUN: would have transistioned the newly created task to Done", $drycol);
