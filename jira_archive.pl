@@ -123,7 +123,7 @@ if ($archive) {
 
 
   pc("Proceed to Archive (Y/n)?", $normcol);
-  pc("DRYRUN: will not actually archive if you choose Y", $drycol);
+  pc("DRYRUN: will not actually archive if you choose Y", $drycol) if $dry;
   $yorn = <>;
   chomp($yorn);
   if ($yorn eq "n") {
