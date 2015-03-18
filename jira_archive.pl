@@ -139,7 +139,7 @@ if ($archive) {
     # fetch_issue($_) if $debug;
 
     if (!$dry) {
-      pc("archiving $_", $bugcol) unless $quiet;
+      pc("archiving $_", $vercol) unless $quiet;
       $jira->transition_issue($_, "Archived");
 
     } else {
@@ -183,6 +183,8 @@ if ($create) {
 
   if (!$dry) {
     $subtask = $jira->create_subtask($project, $summary, $description, $parent);
+    pc("Created " . $subtask->{'key'} . " as a subtask of $parent", $vercol) unless $quiet;
+
   } else {
 
     pc("DRYRUN: would have created $project, $summary, $description as subtask of $parent", $drycol);
@@ -200,8 +202,8 @@ if ($create) {
 
 
   if (!$dry) {
-    pc("update " . $subtask->{'key'} . " to Done", $normcol);
     $jira->transition_issue($subtask->{'key'}, "Done");
+    pc("updated " . $subtask->{'key'} . " to Done", $vercol) unless $quiet;
   } else {
     pc("DRYRUN: would have transistioned the newly created task to Done", $drycol);
   }
