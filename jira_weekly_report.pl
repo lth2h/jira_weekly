@@ -43,7 +43,7 @@ GetOptions(
 	   "use-rss-file=s" => \$rss_file,
 	   "dry-run" => \$dry,
 	   "write-rss" => \$write_rss,
-);
+) or usage();
 
 # my $max_days = $ARGV[0] || 14;
 
@@ -60,7 +60,16 @@ my %staff = %{$yh{"staff"}};
 my $filter = $yh{"filter"};
 my $jira_domain = $yh{"jira_domain"};
 
-my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&streams=$filter&os_authType=basic&title=undefined";
+# because of https://ecosystem.atlassian.net/browse/STRM-2140 and other bugs, a date range needs to be applied. Date format is JavaScript's miliseconds since the Epoch.
+# THIS IS DIFFERENT FROM the --days=x option AND THE SHORTER OF THE TWO WILL CONTROL
+my $fdate = $yh{"fdate"};
+my $first_fdate = 1000*(time() - $fdate*24*60*60); #we'll try two months
+my $last_fdate = 1000*(time());
+my $date_filter="&streams=update-date+BETWEEN+$first_fdate+$last_fdate";
+
+my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&streams=$filter$date_filter&os_authType=basic&title=Activity%20Stream";
+
+# print $url . "\n" if $debug;
 
 if ($write_rss) {
 
@@ -498,5 +507,12 @@ sub getparent {
   # print "\tParent: $parent\n";
 
   return $parent;
+
+}
+
+sub usage {
+
+  print "Usage: $0 [--days=x] [--ignore_weekly=x] [--no-tiems] [--short-items] [--no-export-done] [--use-rss-file=/path/to/filename.rss] [--write-rss]\n";
+  exit;
 
 }
