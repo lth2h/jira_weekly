@@ -163,6 +163,7 @@ if ($create) {
 
   pc("Creating $project, $summary, $description as subtask of $parent", $normcol);
   pc("Proceed? (Y/n)?", $normcol);
+  pc("DRYRUN: will not actually archive if you choose Y", $drycol) if $dry;
 
   $yorn = <>;
   chomp($yorn);
