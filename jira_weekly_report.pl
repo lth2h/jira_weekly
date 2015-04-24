@@ -17,7 +17,7 @@ use Data::Dumper;
 use XML::Feed;
 use HTML::Strip;
 use Lingua::EN::Sentence qw(get_sentences);
-use Date::Calc qw(Delta_Days);
+use Date::Calc qw(Delta_Days Add_Delta_Days);
 use JIRA::Client::Automated;
 use Sort::Naturally;
 
@@ -31,6 +31,7 @@ my $max_days = 0;
 my $ignore_level = 0;
 my ($no_items, $short_items, $no_done);
 my ($rss_file, $write_rss);
+my $yorn;
 
 GetOptions(
 	   "verbose" => \$verbose,
@@ -68,6 +69,75 @@ my $last_fdate = 1000*(time());
 my $date_filter="&streams=update-date+BETWEEN+$first_fdate+$last_fdate";
 
 my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&streams=$filter$date_filter&os_authType=basic&title=Activity%20Stream";
+
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+$year+=1900;
+$mon+=1;
+
+## check last report
+if ( -e "./jira_get_last_report_date.pl") {
+
+  my $last_report_yaml = `./jira_get_last_report_date.pl`;
+
+  my %lr_yh = %{Load($last_report_yaml)};
+
+  # print Dumper \%lr_yh;
+
+  my $last_day = $lr_yh{"max_day"};
+  my $last_mo  = $lr_yh{"max_mo"};
+  my $last_yr  = $lr_yh{"max_yr"};
+  my $last_key = $lr_yh{"max_key"};
+  my $last_summary = $lr_yh{"max_summary"};
+
+  print "Last report on $last_mo/$last_day/$last_yr: $last_key - $last_summary\n" if $debug;
+
+  # check if --days=x ($max_days) or $fdate comes after date of last report (and therefore you'll be missing stuff)
+  
+  my ($ymd, $mmd, $dmd) = Add_Delta_Days($year, $mon, $mday, -1*$max_days);
+
+  print "YEAR:$year,Month:$mon,Day:$mday -$max_days days = $ymd, $mmd, $dmd\n" if $debug;
+
+  my ($yfd, $mfd, $dfd) = Add_Delta_Days($year, $mon, $mday, -1*$fdate);
+
+  print "YEAR:$year,Month:$mon,Day:$mday -$fdate days = $yfd, $mfd, $dfd\n" if $debug;
+
+  # calcudate Dd for both *md and *fd, if either are after the last weekly report, give warning
+
+  my $Ddmd = Delta_Days($last_yr, $last_mo, $last_day, $ymd, $mmd, $dmd);
+
+  print "LAST REPROT: $last_mo/$last_day/$last_yr, MAX_DAYS: $mmd/$dmd/$ymd, DELTA: $Ddmd\n" if $debug;
+
+  my $Ddfd = Delta_Days($last_yr, $last_mo, $last_day, $yfd, $mfd, $dfd);
+
+  print "LAST REPROT: $last_mo/$last_day/$last_yr, FDATE: $mfd/$dfd/$yfd, DELTA: $Ddfd\n" if $debug;
+
+  # if $Dd is positive Date #1 comes BEFORE Date #2, and negative if Date #1 comes AFTER Date #2
+  # so as long as $Dd is negative, all new items since the last report will be found
+  my $dderr = 0;
+  if ($Ddmd > 0) {
+    print "Warning: Max Days set to $max_days, does not go back far enough for previous report on $last_mo/$last_day/$last_yr.\n";
+    $dderr = 1;
+  }
+  if ($Ddfd > 0) {
+    print "Warning: Filter Days set to $fdate, does not go back far enough for previous report on $last_mo/$last_day/$last_yr.\n";
+    $dderr = 1;
+  }
+
+  if ($dderr) {
+    print "Do you want to proceed (y/n)?";
+    $yorn = <>;
+    chomp($yorn);
+    if ($yorn ne "y") {
+      print "You didn't type \"y\" ... exiting\n";
+      exit;
+    }
+  }
+
+} else {
+
+  print "jira_get_last_report_date.pl doesn't exist not checking date of last report\n";
+
+}
 
 # print $url . "\n" if $debug;
 
@@ -116,9 +186,6 @@ my %titles;
 my %keys;
 my %parents;
 
-my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-$year+=1900;
-$mon+=1;
 # print "\nTODAY: M/D/Y: $mon/$mday/$year\n";
 my $range = " to $mon/$mday/$year\n";
 my $last_date = "$mon/$mday/$year";
