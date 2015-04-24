@@ -22,7 +22,7 @@ use JIRA::Client::Automated;
 use Sort::Naturally;
 
 use YAML;
-use File::Slurp;
+use File::Slurp; # is this actually needed???
 
 use Getopt::Long;
 
