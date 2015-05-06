@@ -47,6 +47,13 @@ GetOptions(
 ) or usage();
 
 # my $max_days = $ARGV[0] || 14;
+if (!defined($max_days)) {
+  # max days wasn't given on the command line so don't run the max days test
+  $mdt = 0;
+  # however max days does need to be 0 and not undef so set that now
+  $max_days = 0;
+
+}
 
 my $hs = HTML::Strip->new();
 
@@ -114,7 +121,8 @@ if ( -e "./jira_get_last_report_date.pl") {
   # if $Dd is positive Date #1 comes BEFORE Date #2, and negative if Date #1 comes AFTER Date #2
   # so as long as $Dd is negative, all new items since the last report will be found
   my $dderr = 0;
-  if ($Ddmd > 0) {
+  # don't warn if max days wasn't set on the command line
+  if (($Ddmd > 0) && ($mdt)) {
     print "Warning: Max Days set to $max_days, does not go back far enough for previous report on $last_mo/$last_day/$last_yr.\n";
     $dderr = 1;
   }
