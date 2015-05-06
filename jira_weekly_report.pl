@@ -380,9 +380,13 @@ print "\n\n$range";
 print_report("JIRA DONE TASKS", 1, \%done, 0);
 print_report("JIRA ACTIVE TASKS", 0, \%items, 0);
 
-if (!$no_done) {
+if ((!$no_done) && (!$dry)) {
 
   export_done();
+
+} elsif ((!$no_done) && ($dry)) {
+
+  print "DRYRUN: would have exported done\n";
 
 }
 
