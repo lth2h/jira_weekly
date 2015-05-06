@@ -26,8 +26,9 @@ use File::Slurp; # is this actually needed???
 
 use Getopt::Long;
 
-my ($verbose, $debug, $dry);
-my $max_days = 0;
+my ($verbose, $debug, $dry, $quiet);
+my $max_days;
+my $mdt = 1;
 my $ignore_level = 0;
 my ($no_items, $short_items, $no_done);
 my ($rss_file, $write_rss);
@@ -35,6 +36,7 @@ my $yorn;
 
 GetOptions(
 	   "verbose" => \$verbose,
+	   "quiet" => \$quiet,
 	   "debug" => \$debug,
 	   "days=i" => \$max_days,
 	   "ignore_weekly=i" => \$ignore_level,
@@ -96,7 +98,7 @@ if ( -e "./jira_get_last_report_date.pl") {
   my $last_key = $lr_yh{"max_key"};
   my $last_summary = $lr_yh{"max_summary"};
 
-  print "Last report on $last_mo/$last_day/$last_yr: $last_key - $last_summary\n" if $debug;
+  print "Last report on $last_mo/$last_day/$last_yr: $last_key - $last_summary\n" unless $quiet;
 
   # check if --days=x ($max_days) or $fdate comes after date of last report (and therefore you'll be missing stuff)
   
