@@ -513,15 +513,30 @@ sub munge_title {
 
   # print "NEW TITLE(1): $title\n";
   my $staff1 = $1;
-  # print "DOLLAR1: $staff, STAFF: " . $staff{$staff} . "\n" unless $staff eq "";
+  # print "DOLLAR1: $staff1, STAFF: " . $staff{$staff1} . "\n" unless $staff1 eq "";
 
   # action
 
   $title =~ s/(.*?\s{2,})//;
   my $action = $1;
+  if ($action =~ m/changed the Summary of/) {
+    # need to remove the first 'to' from the title
+    # print "Summary change\n" if $debug;
+    $title =~ s/([A-Z]*-[0-9]*)\s*to.*?'(.*)'/$1 - $2/;
+    # print "New Title (Summary Change): $title\n" if $debug;
+  }
 
   $title =~ s/with a resolution of '(.*)'//;
   my $resolution = $1;
+
+  # for simplity we're going to consider a status change a resolution
+  if (($resolution) && ($resolution =~ m/changed the status to (.*) on/)) {
+    # print "Status change not resolution\n" if $debug;
+    $resolution = $1;
+  }
+
+  ## if $resolution is still null at this point, make it equal to action
+  if (!$resolution) { $resolution = $action; }
 
   my $timespent;
   if ($action =~ m/Time Spent/) {
@@ -532,7 +547,7 @@ sub munge_title {
   }
 
   # print "ACTION: $action\n";
-  # print "RESOLUTION: $resolution\n";
+  # print "RESOLUTION: $resolution\n" if $resolution;
   # print "TIME SPENT: $timespent\n" unless !$timespent;
 
   # remove trailing whitespace
@@ -541,7 +556,7 @@ sub munge_title {
 
   my ($key) = $title =~ m/([A-Z]+-[0-9]+)/;
 
-  # print "##Returning Munged Title##\n";
+  # print "##Returning Munged Title##\n\n";
   # print "\tTitle: $title\n";
   # print "\tSTAFF1: $staff1\n";
 
