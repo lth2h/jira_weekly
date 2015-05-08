@@ -31,7 +31,7 @@ my $max_days;
 my $mdt = 1;
 my $ignore_level = 0;
 my ($no_items, $short_items, $no_done);
-my ($rss_file, $write_rss);
+my ($rss_file, $write_rss, $write_rss_only);
 my $yorn;
 
 GetOptions(
@@ -46,7 +46,12 @@ GetOptions(
 	   "use-rss-file=s" => \$rss_file,
 	   "dry-run" => \$dry,
 	   "write-rss" => \$write_rss,
+	   "only-write-rss" => \$write_rss_only,
 ) or usage();
+
+if ($write_rss_only) {
+  $write_rss = 1;
+}
 
 # my $max_days = $ARGV[0] || 14;
 if (!defined($max_days)) {
@@ -78,10 +83,35 @@ my $last_fdate = 1000*(time());
 my $date_filter="&streams=update-date+BETWEEN+$first_fdate+$last_fdate";
 
 my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&streams=$filter$date_filter&os_authType=basic&title=Activity%20Stream";
+print $url . "\n" if $debug;
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 $year+=1900;
 $mon+=1;
+
+if ($write_rss) {
+
+  my $ua = LWP::UserAgent->new;
+  my $response = $ua->get($url);
+
+  my $dc = $response->decoded_content;  # this needs to go into a file for XML::RSS::Parser
+
+  $rss_file = "/tmp/jira_dc.rss" unless $rss_file;
+
+  open (FILE, "+>$rss_file") or die("kaboom: $rss_file $!");
+
+  print FILE $dc;
+
+  close (FILE);
+
+  print "RSS file written to $rss_file\n" unless $quiet;
+
+  if ($write_rss_only) { exit; }
+
+}
+
+# print Dumper \$dc;
+
 
 ## check last report
 if ( -e "./jira_get_last_report_date.pl") {
@@ -148,27 +178,6 @@ if ( -e "./jira_get_last_report_date.pl") {
   print "jira_get_last_report_date.pl doesn't exist not checking date of last report\n";
 
 }
-
-# print $url . "\n" if $debug;
-
-if ($write_rss) {
-
-  my $ua = LWP::UserAgent->new;
-  my $response = $ua->get($url);
-
-  my $dc = $response->decoded_content;  # this needs to go into a file for XML::RSS::Parser
-
-  $rss_file = "/tmp/jira_dc.rss" unless $rss_file;
-
-  open (FILE, "+>$rss_file") or die("kaboom: $rss_file $!");
-
-  print FILE $dc;
-
-  close (FILE);
-
-}
-
-# print Dumper \$dc;
 
 my $feed;
 if ($rss_file) {
