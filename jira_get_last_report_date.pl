@@ -25,6 +25,7 @@ my @k; # id keys
 my @s; # summaries
 my %ks; # keys => summaries
 my %sk; # summaries => keys
+my $summary_only;
 
 GetOptions(
 	   "verbose" => \$verbose,
@@ -39,6 +40,7 @@ GetOptions(
 	   "test" => \$test,
 	   "dry-run" => \$dry,
 	   "quiet" => \$quiet,
+	   "summary-only" => \$summary_only,
 );
 
 if ($debug) { $verbose = $debug; } else { $debug = 0; }
@@ -131,28 +133,32 @@ print Dumper \%sk if $debug > 1;
 my $highest = 0;
 my $highest_key = 0;
 
-foreach my $key (@k) {
+if (!$summary_only) {
 
-  pc("Processing $key", $vercol) if $verbose;
+  foreach my $key (@k) {
 
-  my ($prefix, $number) = $key =~ /([A-Za-z]*)-([0-9]*)/;
+    pc("Processing $key", $vercol) if $verbose;
 
-  # my @captured = $key =~ /([A-Za-z]*)-([0-9]*)/;
+    my ($prefix, $number) = $key =~ /([A-Za-z]*)-([0-9]*)/;
 
-  # print Dumper \@captured;
+    # my @captured = $key =~ /([A-Za-z]*)-([0-9]*)/;
 
-  pc("PREFIX: $prefix, NUMBER: $number", $bugcol) if $debug;
+    # print Dumper \@captured;
 
-  if ($number > $highest) {
+    pc("PREFIX: $prefix, NUMBER: $number", $bugcol) if $debug;
 
-    $highest = $number;
-    $highest_key = $key;
+    if ($number > $highest) {
+
+      $highest = $number;
+      $highest_key = $key;
+
+    }
 
   }
 
-}
+  pc("Highest key: $highest_key", $vercol) if $verbose;
 
-pc("Highest key: $highest_key", $vercol) if $verbose;
+}
 
 my ($max_yr, $max_mo, $max_day) = ('1')x3;
 my $max_summary;
@@ -190,7 +196,7 @@ foreach my $summary (@s) {
     $max_summary = 'Processing Weekly Report - Feb 12, 2015';
     ($max_yr, $max_mo, $max_day) = ('2015', '2', '12');
   }
-    
+
 
 }
 
@@ -199,11 +205,31 @@ pc("Max Summary: $max_summary", $vercol) if $verbose;
 
 # now if $max_summary and $highest_key agree....
 
-if ( ($ks{$highest_key} eq $max_summary) && ($sk{$max_summary} eq $highest_key)) {
+if (!$summary_only) {
 
-  pc("HIGHEST KEY: $highest_key MATCHES MAX SUMMARY: $max_summary", $vercol) if $verbose;
+  if ( ($ks{$highest_key} eq $max_summary) && ($sk{$max_summary} eq $highest_key)) {
 
-## Now print out the results in YAML
+    pc("HIGHEST KEY: $highest_key MATCHES MAX SUMMARY: $max_summary", $vercol) if $verbose;
+
+    ## Now print out the results in YAML
+
+    print_yaml();
+
+  } else {
+
+    pc("HIGHEST KEY: $highest_key is " . $ks{$highest_key} . " BUT MAX SUMMARY, $max_summary is " . $sk{$max_summary}, $errcol);
+    exit 255;
+
+  }
+
+} else {
+
+  print_yaml();
+
+}
+
+
+sub print_yaml {
 
   print <<EOF;
 ---
@@ -215,11 +241,8 @@ max_key: $highest_key
 
 EOF
 
-} else {
-
-  pc("HIGHEST KEY: $highest_key is " . $ks{$highest_key} . " BUT MAX SUMMARY, $max_summary is " . $sk{$max_summary}, $errcol);
-
 }
+
 
 sub pc {
 
