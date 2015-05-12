@@ -23,6 +23,8 @@ use Sort::Naturally;
 
 use YAML;
 use File::Slurp; # is this actually needed???
+# use Test::YAML::Valid;
+# use Kwalify qw(validate);
 
 use Getopt::Long;
 
@@ -116,7 +118,20 @@ if ($write_rss) {
 ## check last report
 if ( -e "./jira_get_last_report_date.pl") {
 
-  my $last_report_yaml = `./jira_get_last_report_date.pl`;
+  # get last report date from the summary only instead of both summary and highest key
+  # maybe this should be an option
+  # my $last_report_yaml = `./jira_get_last_report_date.pl`;
+  my $last_report_yaml = `./jira_get_last_report_date.pl --summary-only`;
+
+  if (!ck_exit_status($?)) {
+
+    print "get last report date failed\n";
+    exit;
+
+  }
+
+  ### TO DO:
+  ### check exit status or fix jira_get_last_report_date.pl
 
   my %lr_yh = %{Load($last_report_yaml)};
 
@@ -513,7 +528,7 @@ sub munge_title {
 
   # print "NEW TITLE(1): $title\n";
   my $staff1 = $1;
-  # print "DOLLAR1: $staff1, STAFF: " . $staff{$staff1} . "\n" unless $staff1 eq "";
+  # print "DOLLAR1: \"$staff1\", STAFF: " . $staff{$staff1} . "\n" unless $staff1 eq "";
 
   # action
 
@@ -536,7 +551,7 @@ sub munge_title {
   }
 
   ## if $resolution is still null at this point, make it equal to action
-  if (!$resolution) { $resolution = $action; }
+  if (!$resolution) { $resolution = $action; } # not the best idea but it works
 
   my $timespent;
   if ($action =~ m/Time Spent/) {
@@ -612,6 +627,21 @@ sub getparent {
   # print "\tParent: $parent\n";
 
   return $parent;
+
+}
+
+sub ck_exit_status {
+
+  my $excode = shift;
+  my $rv = 1;
+
+  print "Checking exit code $excode\n" if $debug;
+
+  if ($excode != 0) {
+    $rv = 0;
+  }
+
+  return $rv;
 
 }
 
