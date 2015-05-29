@@ -300,13 +300,20 @@ foreach my $entry (@entries) {
   $title =~ s/^\s+|\s+$//g;
   $title =~ s/\n//g;
 
-  # print "STRIPPED TITLE: $title\n";
+  # print "STRIPPED TITLE: $title\n" if $debug;
   # print "STRIPPED CONTENT: $content\n";
   # print "STRIPPED BODY: $body\n";
 
   # Title seems to be in the form of <NAME><ACTION>     <ACTIVTY TITLE>
 
   ($title, $by, $action, $resolution, $key) = munge_title($title);
+
+  if (!$key) {
+
+    print "No key found for $title, skipping\n";
+    next;
+
+  }
 
   if (!defined($done{$title})) {
     $done{$title} = 0;
@@ -322,12 +329,14 @@ foreach my $entry (@entries) {
 
   }
 
-  # print "TITLE: '$title'\n";
-  # print "\t$body\n" unless $body eq "";
-  # print "\t$resolution\n" unless $resolution eq "";
-  # print "\tBY: $by\n" unless $by eq "";
-  # print "\tKEY: $key\n";
-  # print "BODY: '$body'\n";
+  # if ($debug) {
+  #   print "TITLE: '$title'\n";
+  #   # print "\t$body\n" unless $body eq "";
+  #   print "\tRESOLUTION: $resolution\n" unless $resolution eq "";
+  #   print "\tBY: $by\n" unless $by eq "";
+  #   print "\tKEY: $key\n";
+  #  #  print "BODY: '$body'\n";
+  # }
 
   if ($short_items) {
     my $sentences=get_sentences($body);
