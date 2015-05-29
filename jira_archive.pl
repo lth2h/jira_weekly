@@ -140,7 +140,9 @@ if ($archive) {
 
     if (!$dry) {
       pc("archiving $_", $vercol) unless $quiet;
-      $jira->transition_issue($_, "Archived");
+      # $jira->transition_issue($_, "Archived");
+      eval { $jira->transition_issue($_, "Archived") }; warn $@ if $@;
+
 
     } else {
 
