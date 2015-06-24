@@ -570,6 +570,13 @@ sub munge_title {
 
   }
 
+  ## Need to deal with this case:
+  ##Munging Title: 'Staff Name changed the status to Done on       PROJECT-2 - Task Description    with a resolution of 'Incomplete''##
+  # NEW TITLE(1):  changed the status to Done on       PROJECT-2 - Task Description   with a resolution of 'Incomplete'
+  # ACTION:  changed the status to Done on
+  # RESOLUTION: Incomplete
+  # don't really want them appearing in the done list, but they do need to be archvied.  Maybe use jira_get_old_done.pl
+
   # print "ACTION: $action\n";
   # print "RESOLUTION: $resolution\n" if $resolution;
   # print "TIME SPENT: $timespent\n" unless !$timespent;
