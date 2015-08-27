@@ -17,3 +17,10 @@ jira_domain: my-jira-domain.atlassian.net
 
 dproject: default_project
 dparent: default_parent_task
+
+# only used in the get_old_done script.
+uids:
+  - jdoe1
+  - jdoe23
+  - wemp74
+  - efiv175
