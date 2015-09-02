@@ -27,6 +27,7 @@ use File::Slurp; # is this actually needed???
 # use Kwalify qw(validate);
 
 use Getopt::Long;
+use POSIX qw(strftime);
 
 my ($verbose, $debug, $dry, $quiet);
 my $max_days;
@@ -47,9 +48,15 @@ GetOptions(
 	   "no-export-done" => \$no_done,
 	   "use-rss-file=s" => \$rss_file,
 	   "dry-run" => \$dry,
-	   "write-rss" => \$write_rss,
+	   "write-rss!" => \$write_rss,
 	   "only-write-rss" => \$write_rss_only,
 ) or usage();
+
+if (!defined($write_rss)) {
+
+  $write_rss = 1; # always write rss unless given --no-write-rss
+
+}
 
 if ($write_rss_only) {
   $write_rss = 1;
@@ -88,8 +95,12 @@ my $url = "https://$username:$password\@$jira_domain/activity?maxResults=1000&st
 print $url . "\n" if $debug;
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+my $now_string = strftime("%Y-%m-%d_%H%M%S", ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst));
+
 $year+=1900;
 $mon+=1;
+my $lzmon = sprintf('%02d', $mon);
+my $lzmday = sprintf('%02d', $mday);
 
 if ($write_rss) {
 
@@ -98,7 +109,7 @@ if ($write_rss) {
 
   my $dc = $response->decoded_content;  # this needs to go into a file for XML::RSS::Parser
 
-  $rss_file = "/tmp/jira_dc.rss" unless $rss_file;
+ $rss_file = "/tmp/$now_string-jira_dc.rss" unless $rss_file;
 
   open (FILE, "+>$rss_file") or die("kaboom: $rss_file $!");
 
