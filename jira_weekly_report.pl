@@ -5,6 +5,8 @@
 
 # use jira_archive.pl to archive and create the Weekly Report task.
 
+## TO DO: Make it so you can override what is in the yaml
+
 use strict;
 use warnings;
 
