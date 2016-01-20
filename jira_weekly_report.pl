@@ -38,6 +38,7 @@ my $ignore_level = 0;
 my ($no_items, $short_items, $no_done);
 my ($rss_file, $write_rss, $write_rss_only);
 my $yorn;
+my $fdate;
 
 GetOptions(
 	   "verbose" => \$verbose,
@@ -52,6 +53,7 @@ GetOptions(
 	   "dry-run" => \$dry,
 	   "write-rss!" => \$write_rss,
 	   "only-write-rss" => \$write_rss_only,
+	   "fdate=i" => \$fdate,
 ) or usage();
 
 if (!defined($write_rss)) {
@@ -88,7 +90,7 @@ my $jira_domain = $yh{"jira_domain"};
 
 # because of https://ecosystem.atlassian.net/browse/STRM-2140 and other bugs, a date range needs to be applied. Date format is JavaScript's miliseconds since the Epoch.
 # THIS IS DIFFERENT FROM the --days=x option AND THE SHORTER OF THE TWO WILL CONTROL
-my $fdate = $yh{"fdate"};
+if (!$fdate) {$fdate = $yh{"fdate"}; }
 my $first_fdate = 1000*(time() - $fdate*24*60*60); #we'll try two months
 my $last_fdate = 1000*(time());
 my $date_filter="&streams=update-date+BETWEEN+$first_fdate+$last_fdate";
