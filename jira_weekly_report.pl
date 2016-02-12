@@ -32,6 +32,7 @@ use Getopt::Long;
 use POSIX qw(strftime);
 
 my ($verbose, $debug, $dry, $quiet);
+my $show_entries;
 my $max_days;
 my $mdt = 1;
 my $ignore_level = 0;
@@ -44,6 +45,7 @@ GetOptions(
 	   "verbose" => \$verbose,
 	   "quiet" => \$quiet,
 	   "debug" => \$debug,
+	   "show-entries" => \$show_entries,
 	   "days=i" => \$max_days,
 	   "ignore_weekly=i" => \$ignore_level,
 	   "no-items" => \$no_items,
@@ -161,7 +163,7 @@ if ( -e "./jira_get_last_report_date.pl") {
   print "Last report on $last_mo/$last_day/$last_yr: $last_key - $last_summary\n" unless $quiet;
 
   # check if --days=x ($max_days) or $fdate comes after date of last report (and therefore you'll be missing stuff)
-  
+
   my ($ymd, $mmd, $dmd) = Add_Delta_Days($year, $mon, $mday, -1*$max_days);
 
   print "YEAR:$year,Month:$mon,Day:$mday -$max_days days = $ymd, $mmd, $dmd\n" if $debug;
@@ -241,20 +243,25 @@ my $last_date = "$mon/$mday/$year";
 
 foreach my $entry (@entries) {
 
-  # print "\n######\n";
-  # print Dumper \$entry;
+  print "\n######\n" if $show_entries;
+  print Dumper \$entry  if $show_entries;
 
   my $content = $entry->content;
   my $title = $entry->title;
   my $id = $entry->id;
   my $issued = $entry->issued;
   my @links = $entry->link;  # doesn't work as advertised
-  # my $summary = $entry->summary;
-  # print Dumper \$content;
-  # print Dumper \$title;
-  # print Dumper \$summary;
-  # print Dumper \$issued;
-  # print Dumper \@links;
+
+   if ($show_entries) {
+
+     my $summary = $entry->summary;
+     print Dumper \$content;
+     print Dumper \$title;
+     print Dumper \$summary;
+     print Dumper \$issued;
+     print Dumper \@links;
+
+   }
 
   my $item_year = $issued->year();
   my $item_month = $issued->month();
@@ -262,11 +269,11 @@ foreach my $entry (@entries) {
   my $item_month_a = $issued->month_abbr();
   my $item_day = sprintf("%02d", $issued->day());
 
-  # print "\nM/D/Y: $item_month_a/$item_day/$item_year\n";
+  print "\nM/D/Y: $item_month_a/$item_day/$item_year\n"  if $show_entries;
 
   my $Dd = Delta_Days($item_year, $item_month, $item_day,$year, $mon, $mday);
 
-  # print "\tDelta Days: $Dd\n";
+  print "\tDelta Days: $Dd\n"  if $show_entries;
 
   if ($max_days > 0) {
     if ($Dd > $max_days) {
@@ -278,16 +285,23 @@ foreach my $entry (@entries) {
 
   $last_date = "$item_month/$item_day/$item_year";
 
-  my $body = $content->body;
+  my $body = $content->body || "";
   my $action;
   my $resolution;
   my $by;
   my $key;
   #   print Dumper \$body;
 
-  # print "TITLE: \"$title\"\n";
-  # print "CONTENT: $content\n";
-  # print "BODY: \"$body\"\n";
+  if ($show_entries) {
+
+    print "TITLE: \"$title\"\n";
+    print "CONTENT: $content\n";
+    if ($body eq "") {
+      print "NO BODY\n";
+    } else {
+      print "BODY: \"$body\"\n";
+    }
+  }
 
   $title = $hs->parse($title);
   # $content = $hs->parse($content);
@@ -315,9 +329,13 @@ foreach my $entry (@entries) {
   $title =~ s/^\s+|\s+$//g;
   $title =~ s/\n//g;
 
-  # print "STRIPPED TITLE: $title\n" if $debug;
-  # print "STRIPPED CONTENT: $content\n";
-  # print "STRIPPED BODY: $body\n";
+  if ($show_entries) {
+
+    print "STRIPPED TITLE: $title\n";
+    print "STRIPPED CONTENT: $content\n";
+    print "STRIPPED BODY: $body\n";
+
+  }
 
   # Title seems to be in the form of <NAME><ACTION>     <ACTIVTY TITLE>
 
@@ -344,21 +362,23 @@ foreach my $entry (@entries) {
 
   }
 
-  # if ($debug) {
-  #   print "TITLE: '$title'\n";
-  #   # print "\t$body\n" unless $body eq "";
-  #   print "\tRESOLUTION: $resolution\n" unless $resolution eq "";
-  #   print "\tBY: $by\n" unless $by eq "";
-  #   print "\tKEY: $key\n";
-  #  #  print "BODY: '$body'\n";
-  # }
+  if ($show_entries) {
+    if ($debug) {
+      print "TITLE: '$title'\n";
+      print "\t$body\n" unless $body eq "";
+      print "\tRESOLUTION: $resolution\n" unless $resolution eq "";
+      print "\tBY: $by\n" unless $by eq "";
+      print "\tKEY: $key\n";
+      #  print "BODY: '$body'\n";
+    }
+  }
 
   if ($short_items) {
     my $sentences=get_sentences($body);
     $body = @$sentences[0];
   }
 
-  # print "BODY AFTER GET SEN: '$body'\n";
+  print "BODY AFTER GET SEN: '$body'\n"  if $show_entries;
 
   # we don't want forwarded emails...
   if (($body) && ($body =~ m/---------- Forwarded message ----------/))  {
