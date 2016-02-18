@@ -15,7 +15,7 @@ use YAML;
 use File::Slurp;
 
 my ($verbose, $debug, $dry, $help, $quiet);
-my ($archive, $create);
+my ($archive, $create, $both);
 my ($parent, $project, $summary, $description);
 my $test;
 my ($dparent, $dproject, $dsummary, $ddescription);
@@ -34,9 +34,12 @@ GetOptions(
 	   "test" => \$test,
 	   "dry-run" => \$dry,
 	   "quiet" => \$quiet,
+	   "both" => \$both,
 );
 
 if ($help) { usage(); exit;}
+
+if ($both) {$create = $archive = 1;}
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 my @abbr = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
