@@ -113,14 +113,17 @@ $mon+=1;
 my $lzmon = sprintf('%02d', $mon);
 my $lzmday = sprintf('%02d', $mday);
 
-if ($write_rss) {
+if (($write_rss) && (!$rss_file))  {
+  # write rss but not if we've given it an rs file
 
   my $ua = LWP::UserAgent->new;
   my $response = $ua->get($url);
 
   my $dc = $response->decoded_content;  # this needs to go into a file for XML::RSS::Parser
 
- $rss_file = "/tmp/$now_string-jira_dc.rss" unless $rss_file;
+  print "RSS FILE: $rss_file\n" if (($debug) && ($rss_file));
+  $rss_file = "/tmp/$now_string-jira_dc.rss" unless $rss_file;
+  print "RSS FILE IS NOW: $rss_file\n" if (($debug) && ($rss_file));
 
   open (FILE, "+>$rss_file") or die("kaboom: $rss_file $!");
 
