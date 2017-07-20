@@ -564,7 +564,7 @@ sub munge_title {
 
   my $title = shift;
 
-  # print "##Munging Title: '$title'##\n";
+  print "##Munging Title: '$title'##\n" if $debug;
 
   chomp($title);
 
@@ -648,7 +648,7 @@ sub munge_title {
 
   $title =~ s/\s*$//;
 
-  my ($key) = $title =~ m/([A-Z]+-[0-9]+)/;
+  my ($key) = $title =~ m/([A-Z0-9]+-[0-9]+)/;
 
   # print "##Returning Munged Title##\n\n";
   # print "\tTitle: $title\n";
