@@ -24,3 +24,15 @@ uids:
   - jdoe23
   - wemp74
   - efiv175
+
+# known verbs
+verbs:
+   - changed
+   - created
+   - updated
+   - removed
+   - commented
+   - started
+   - attached
+
+    

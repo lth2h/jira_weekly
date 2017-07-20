@@ -84,9 +84,12 @@ $yaml = read_file("jira_weekly.yaml");
 
 my %yh = %{Load($yaml)}; # the yaml hash
 
+print Dumper \%yh if $debug;
+
 my $username = $yh{"username"};
 my $password = $yh{"password"};
 my %staff = %{$yh{"staff"}};
+my @verbs = @{$yh{"verbs"}};
 my $filter = $yh{"filter"};
 my $jira_domain = $yh{"jira_domain"};
 
@@ -573,6 +576,26 @@ sub munge_title {
   # print "NEW TITLE(1): $title\n";
   my $staff1 = $1;
   # print "DOLLAR1: \"$staff1\", STAFF: " . $staff{$staff1} . "\n" unless $staff1 eq "";
+
+  if (!$staff1) {
+    # panic and try to guess the staff
+
+    my $verbs_regex = "(";
+    $verbs_regex .= join "|", @verbs;
+    $verbs_regex .= ")";
+    print "VERBS REGEX: $verbs_regex\n" if $debug;
+    $title =~ s/^(.*) $verbs_regex/$2/;
+    $staff1 = $1;
+    print "GUESS FOR STAFF1: $staff1\n" if $debug;
+  }
+
+  if (!$staff{$staff1}) {
+    print "unknown staff: $staff1\n";
+    $staff{$staff1} = $staff1;
+  }
+
+  print "GUESS FOR STAFF{STAFF1}:" . $staff{$staff1} . "\n" if $debug;
+  # print "NEW TITLE(1): $title\n";
 
   # action
 
