@@ -10,7 +10,9 @@
 use strict;
 use warnings;
 
-binmode STDOUT, ":utf8";
+# binmode STDOUT, ":utf8";
+# binmode STDOUT, ":encoding(C)";
+# use open ':encoding(C)';
 
 use LWP::UserAgent;
 use Data::Dumper;
