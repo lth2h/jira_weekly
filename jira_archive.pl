@@ -144,13 +144,18 @@ if ($archive) {
     if (!$dry) {
       pc("archiving $_", $vercol) unless $quiet;
       # $jira->transition_issue($_, "Archived");
-      eval { $jira->transition_issue($_, "Archived") }; warn $@ if $@;
-
+      eval { $jira->transition_issue($_, "Archived") };
+      # warn $@ if $@;
+      if ($@) {
+	open (F2, ">>$filename" . "_errors") or die("Could not open $filename" . "_errors: $!");
+	print F2 $_;
+	close(F2);
+	warn $@;
+      }
 
     } else {
 
       pc("DRYRUN: would have moved $_ to Archived", $drycol);
-
     }
 
   }
