@@ -212,7 +212,7 @@ foreach my $issue (@issues) {
 	}
 	print "</ul>";
 
-	print "CLOSING JIRA</li></ul>\n"; # close JIRA
+	print "</li></ul>\n"; # close JIRA
 
     }
 
