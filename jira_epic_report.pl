@@ -12,7 +12,6 @@ use File::Slurp;
 use Data::Dumper;
 
 my ($verbose, $debug, $dry, $help, $quiet, $test);
-my $project;
 my $display_comments;
 my $show_done;
 
@@ -22,7 +21,6 @@ GetOptions(
     "verbose" => \$verbose,
     "debug" => \$debug,
     "help" => \$help,
-    "project=s" => \$project,
     "test" => \$test,
     "dry-run" => \$dry,
     "quiet" => \$quiet,
@@ -218,15 +216,14 @@ foreach my $issue (@issues) {
 
     }
 
-
-
     print "\n";
 
 }
 
 sub usage {
 
-  print "$0 [--project=projectID] [--epic=epicID] [--show-archived] \n";
-  print "\tGet activity on epics\n";
+    # print "$0 [--project=projectID] [--epic=epicID] [--show-archived] \n";
+    print "$0 [--test] [--done] [--comments=<number>] \n";
+    print "\tGet activity on epics\n";
 
 }
