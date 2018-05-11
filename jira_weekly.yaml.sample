@@ -35,4 +35,20 @@ verbs:
    - started
    - attached
 
-    
+# projectleads, assignees, and excludeprojects are used in the epics report script
+projectleads:
+        - jdoe
+        - wkemp
+        - janedoe
+
+assignees:
+        - jdoe
+        - wkemp
+        - emponeseventyfive
+	- anemp
+
+excludeprojects:
+        - "My Project"
+        - ThePROJECT
+        - "Never Ending Project"
+
