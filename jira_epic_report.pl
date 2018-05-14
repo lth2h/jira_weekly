@@ -144,13 +144,25 @@ foreach my $issue (@issues) {
 
     print "<P>" . $issue->{"fields"}->{"description"} . "</P>\n" unless (!$issue->{"fields"}->{"description"});
 
+    if ($issue->{"fields"}->{"issuelinks"}) {
+
+      # print "ISSUELINKS LENGHT:" . scalar(@issuelinks) . "\n";
+      my $relations = getRelations($issue);
+      if ($relations) {
+	print  "<ul><li>JIRA Relations and Blocks\n";
+	print  $relations;
+	print "</li></ul>";
+      }
+
+    }
+    
     my @comments = @{$jira->get_issue_comments($issue->{"key"})};
     print Dumper \@comments if $debug;
 
     #we're going to assume that the comments are in the array in date order.  Display the last comment first
     if (scalar(@comments) > 0) {
-
-	print "<ul>";
+      
+	print "<ul><li>Comments:<ul>";
 	if (!$display_comments) {
 	    $display_comments = 1;
 	}
@@ -172,7 +184,7 @@ foreach my $issue (@issues) {
 
 	}
 
-	print "</ul>\n";
+	print "</ul></P></li></ul>\n";
 
     }
 
@@ -207,6 +219,7 @@ foreach my $issue (@issues) {
 	    print " (Status: ";
 	    print $esubt->{"fields"}->{"status"}->{"name"};
 	    print ")";
+	    print getRelations($esubt);
 	    print "</li>\n";
 
 	}
@@ -227,3 +240,60 @@ sub usage {
     print "\tGet activity on epics\n";
 
 }
+
+
+
+sub getRelations {
+
+  my $rv;
+  $rv .= "\n=== START getRelations ===\n" if $debug;
+  my $theissue = shift;
+
+    if ($theissue->{"fields"}->{"issuelinks"}) {
+
+      my @issuelinks = @{$theissue->{"fields"}->{"issuelinks"}};
+      # print "ISSUELINKS LENGHT:" . scalar(@issuelinks) . "\n";
+      my $blocks_end = "";
+      if (scalar(@issuelinks) > 0) {
+	$rv .= "<ul>\n";
+	$blocks_end = "</ul>\n";
+      }
+      
+      foreach my $linked (@issuelinks) {
+	# we don't know if it inward or outward without checking for the key
+	# and we can't check for the key if it isn't a hashref
+
+	# $rv .= Dumper \$linked;
+	# $rv .= "REF:" . ref($linked) . "\n";
+
+	if (ref $linked eq ref {}) {
+
+	  if (exists($linked->{"inwardIssue"})) {
+
+	    $rv .= "<li>";
+	    $rv .= $linked->{"inwardIssue"}->{"key"};
+	    $rv .= " " . $linked->{"type"}->{"inward"} . " ";
+	    $rv .= $theissue->{"key"};
+	    $rv .= "</li>\n";
+
+	  }
+	  if (exists($linked->{"outwardIssue"})) {
+
+	    $rv .= "<li>";
+	    $rv .= $linked->{"outwardIssue"}->{"key"};
+	    $rv .= " " . $linked->{"type"}->{"outward"} . " ";
+	    $rv .= $theissue->{"key"};
+	    $rv .= "</li>\n";
+	  }
+	}
+
+      }
+
+      $rv .= $blocks_end;
+      
+    }
+  $rv .= "\n=== END getRelations ===\n" if $debug;
+
+  return $rv;
+}
+   
