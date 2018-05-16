@@ -12,9 +12,12 @@ use File::Slurp;
 use Data::Dumper;
 
 my ($verbose, $debug, $dry, $help, $quiet, $test);
-my $display_comments;
+my $display_comments = 1;
 my $show_done;
 my $bold_block;
+# my $blocks_only; this requires relying on jql instead of what comes out of the issuelinks from the epic
+# JQL: issue in linkedIssues("TP-3", "blocks")
+my ($no_issues, $no_related, $no_jira);
 
 my $jql;
 
@@ -28,7 +31,16 @@ GetOptions(
     "comments=i" => \$display_comments,
     "done" => \$show_done,
     "bold-block" => \$bold_block,
+     #    "blocks-only" => \$blocks_only,
+    "no-issues" => \$no_issues,
+    "no-related" => \$no_related,
+    "no-jira" => \$no_jira,
 );
+
+if ($no_jira) {
+  $no_related = 1;
+  $no_issues = 1;
+}
 
 if ($help) { usage(); exit;}
 
@@ -95,7 +107,6 @@ $jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assign
 
 if ($show_done) {
     $jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assignee)) AND project not in ($notprojects) AND status = Done AND filter != \"done is archived\" ORDER BY Priority";
-
 }
 
 if ($test) {
@@ -104,6 +115,7 @@ if ($test) {
 
 }
 print "JQL: $jql\n" if $debug;
+
 
 # $results is a hash with keys: start total max issues
 my $results = $jira->search_issues($jql, 0, 1000);
@@ -151,12 +163,9 @@ foreach my $issue (@issues) {
     print Dumper \@comments if $debug;
 
     #we're going to assume that the comments are in the array in date order.  Display the last comment first
-    if (scalar(@comments) > 0) {
+    if (($display_comments > 0) && (scalar(@comments) > 0)) {
 
 	print "<ul><li>Comments:<ul>";
-	if (!$display_comments) {
-	    $display_comments = 1;
-	}
 	for (my $i=$#comments; $i > $#comments-$display_comments; $i--) {
 
 	    last if ($i < 0);
@@ -181,7 +190,7 @@ foreach my $issue (@issues) {
 
 
     # JIRA relations
-    if ($issue->{"fields"}->{"issuelinks"}) {
+    if ((!$no_jira) && (!$no_related) && ($issue->{"fields"}->{"issuelinks"})) {
 
       # print "ISSUELINKS LENGHT:" . scalar(@issuelinks) . "\n";
       my $relations = getRelations($issue);
@@ -193,16 +202,20 @@ foreach my $issue (@issues) {
 
     }
 
-    # get all the subtasks of the epic and use parentEpic to get all the issues and subtasks of the epic
-    my $jql2 = "(parent = " . $issue->{"key"} . ") or (parentEpic = " . $issue->{"key"} . " AND key != " . $issue->{"key"} . ")";
+    if ((!$no_jira) && (!$no_issues)) {
 
-    my $results2 = $jira->search_issues($jql2, 0, 1000);
+      # get all the subtasks of the epic and use parentEpic to get all the issues and subtasks of the epic
+      my $jql2 = "(parent = " . $issue->{"key"} . ") or (parentEpic = " . $issue->{"key"} . " AND key != " . $issue->{"key"} . ")";
 
-    print Dumper \$results2 if $debug;
+      print "JQL2: $jql2\n" if $debug;
 
-    my @epicsubtasks = @{$results2->{"issues"}};
+      my $results2 = $jira->search_issues($jql2, 0, 1000);
 
-    if (scalar(@epicsubtasks) > 0) {
+      print Dumper \$results2 if $debug;
+
+      my @epicsubtasks = @{$results2->{"issues"}};
+
+      if (scalar(@epicsubtasks) > 0) {
 
 	print "<ul><li>JIRA Issues in Epic\n";
 
@@ -213,31 +226,32 @@ foreach my $issue (@issues) {
 	print "<ul>";
 	foreach my $esubt (@epicsubtasks) {
 
-	    print "\n\n=== esubt ===\n" if $debug;
-	    print Dumper \$esubt if $debug;
-	    print "\n===end esubt ===\n\n" if $debug;
+	  print "\n\n=== esubt ===\n" if $debug;
+	  print Dumper \$esubt if $debug;
+	  print "\n===end esubt ===\n\n" if $debug;
 
-	    print "<li>";
-	    print $esubt->{"key"};
-	    print " ";
-	    print $esubt->{"fields"}->{"summary"};
-	    print " (Status: ";
-	    print $esubt->{"fields"}->{"status"}->{"name"};
-	    print ")";
-	    print getRelations($esubt);
-	    print "</li>\n";
+	  print "<li>";
+	  print $esubt->{"key"};
+	  print " ";
+	  print $esubt->{"fields"}->{"summary"};
+	  print " (Status: ";
+	  print $esubt->{"fields"}->{"status"}->{"name"};
+	  print ")";
+	  print getRelations($esubt);
+	  print "</li>\n";
 
 	}
 
 	print "</ul>";
 
-	print "</li></ul>\n"; # close JIRA
+	print "</li></ul>\n";	# close JIRA
+
+      }
+
+      print "\n";
 
     }
-
-    print "\n";
-
-}
+  }
 
 sub usage {
 
@@ -246,6 +260,10 @@ sub usage {
     print "\tGet activity on epics\n";
     print "OtherOptions:\n";
     print "\t--bold-block put blocking tasks in bold\n";
+    print "\t--no-issues do not show JIRA issues in epic\n";
+    print "\t--no-related do not show JIRA relations\n";
+    print "\t--no-jira do not show anything JIRA (imples --no-issues and --no-related)\n";
+    print "Note if you want no comments, set it to 0\n";
 
 }
 
