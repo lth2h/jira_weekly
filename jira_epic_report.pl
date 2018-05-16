@@ -86,12 +86,13 @@ foreach (@excludeprojects) {
     $notprojects .= "\"$_\", ";
 
 }
+
 $notprojects =~ s/, $//;
 
-$jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assignee) AND project not in ($notprojects)) AND status not in (Archived, Done) AND filter != \"done is archived\" ORDER BY Priority"; # filter should probably also be in the yaml config file
+$jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assignee) OR watcher in ($assignee)) AND project not in ($notprojects) AND status not in (Archived, Done) AND filter != \"done is archived\" ORDER BY Priority"; # filter should probably also be in the yaml config file
 
 if ($show_done) {
-    $jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assignee) AND project not in ($notprojects)) AND status = Done AND filter != \"done is archived\" ORDER BY Priority";
+    $jql = "type = epic AND (project in ($projectLeadByUser) OR assignee in ($assignee)) AND project not in ($notprojects) AND status = Done AND filter != \"done is archived\" ORDER BY Priority";
 
 }
 
