@@ -272,6 +272,7 @@ sub getRelations {
 
 	    $rv .= "<li>";
 	    $rv .= $linked->{"inwardIssue"}->{"key"};
+	    $rv .= " (" . $linked->{"inwardIssue"}->{"fields"}->{"summary"} . ") ";
 	    $rv .= " " . $linked->{"type"}->{"inward"} . " ";
 	    $rv .= $theissue->{"key"};
 	    $rv .= "</li>\n";
@@ -281,6 +282,7 @@ sub getRelations {
 
 	    $rv .= "<li>";
 	    $rv .= $linked->{"outwardIssue"}->{"key"};
+	    $rv .= " (" . $linked->{"outwardIssue"}->{"fields"}->{"summary"} . ") ";
 	    $rv .= " " . $linked->{"type"}->{"outward"} . " ";
 	    $rv .= $theissue->{"key"};
 	    $rv .= "</li>\n";
