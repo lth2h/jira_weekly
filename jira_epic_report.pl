@@ -14,6 +14,7 @@ use Data::Dumper;
 my ($verbose, $debug, $dry, $help, $quiet, $test);
 my $display_comments;
 my $show_done;
+my $bold_block;
 
 my $jql;
 
@@ -26,6 +27,7 @@ GetOptions(
     "quiet" => \$quiet,
     "comments=i" => \$display_comments,
     "done" => \$show_done,
+    "bold-block" => \$bold_block,
 );
 
 if ($help) { usage(); exit;}
@@ -240,8 +242,10 @@ foreach my $issue (@issues) {
 sub usage {
 
     # print "$0 [--project=projectID] [--epic=epicID] [--show-archived] \n";
-    print "$0 [--test] [--done] [--comments=<number>] \n";
+    print "$0 [--test] [--done] [--comments=<number>] [OtherOptions] \n";
     print "\tGet activity on epics\n";
+    print "OtherOptions:\n";
+    print "\t--bold-block put blocking tasks in bold\n";
 
 }
 
@@ -273,22 +277,35 @@ sub getRelations {
 	if (ref $linked eq ref {}) {
 
 	  if (exists($linked->{"inwardIssue"})) {
+	    my $bold = 0;
+	    if ($linked->{"type"}->{"inward"} =~ /block/) {
+	      $bold = 1 if $bold_block;
+	    }
 
 	    $rv .= "<li>";
+	    $rv .= "<B>" if $bold;
 	    $rv .= $linked->{"inwardIssue"}->{"key"};
 	    $rv .= " (" . $linked->{"inwardIssue"}->{"fields"}->{"summary"} . ") ";
 	    $rv .= " " . $linked->{"type"}->{"inward"} . " ";
 	    $rv .= $theissue->{"key"};
+	    $rv .= "</B>" if $bold;
 	    $rv .= "</li>\n";
 
 	  }
 	  if (exists($linked->{"outwardIssue"})) {
 
+	    my $bold = 0;
+	    if ($linked->{"type"}->{"outward"} =~ /block/) {
+	      $bold = 1 if $bold_block;
+	    }
+
 	    $rv .= "<li>";
+	    $rv .= "<B>" if $bold;
 	    $rv .= $linked->{"outwardIssue"}->{"key"};
 	    $rv .= " (" . $linked->{"outwardIssue"}->{"fields"}->{"summary"} . ") ";
 	    $rv .= " " . $linked->{"type"}->{"outward"} . " ";
 	    $rv .= $theissue->{"key"};
+	    $rv .= "</B>" if $bold;
 	    $rv .= "</li>\n";
 	  }
 	}
