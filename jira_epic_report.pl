@@ -145,24 +145,12 @@ foreach my $issue (@issues) {
 
     print "<P>" . $issue->{"fields"}->{"description"} . "</P>\n" unless (!$issue->{"fields"}->{"description"});
 
-    if ($issue->{"fields"}->{"issuelinks"}) {
-
-      # print "ISSUELINKS LENGHT:" . scalar(@issuelinks) . "\n";
-      my $relations = getRelations($issue);
-      if ($relations) {
-	print  "<ul><li>JIRA Relations and Blocks\n";
-	print  $relations;
-	print "</li></ul>";
-      }
-
-    }
-    
     my @comments = @{$jira->get_issue_comments($issue->{"key"})};
     print Dumper \@comments if $debug;
 
     #we're going to assume that the comments are in the array in date order.  Display the last comment first
     if (scalar(@comments) > 0) {
-      
+
 	print "<ul><li>Comments:<ul>";
 	if (!$display_comments) {
 	    $display_comments = 1;
@@ -189,6 +177,20 @@ foreach my $issue (@issues) {
 
     }
 
+
+    # JIRA relations
+    if ($issue->{"fields"}->{"issuelinks"}) {
+
+      # print "ISSUELINKS LENGHT:" . scalar(@issuelinks) . "\n";
+      my $relations = getRelations($issue);
+      if ($relations) {
+	print  "<ul><li>JIRA Relations and Blocks\n";
+	print  $relations;
+	print "</li></ul>";
+      }
+
+    }
+
     # get all the subtasks of the epic and use parentEpic to get all the issues and subtasks of the epic
     my $jql2 = "(parent = " . $issue->{"key"} . ") or (parentEpic = " . $issue->{"key"} . " AND key != " . $issue->{"key"} . ")";
 
@@ -200,7 +202,7 @@ foreach my $issue (@issues) {
 
     if (scalar(@epicsubtasks) > 0) {
 
-	print "<ul><li>JIRA\n";
+	print "<ul><li>JIRA Issues in Epic\n";
 
 	print "\n\n" . $#epicsubtasks . " EPIC SUBTASKS\n\n" if $verbose;
 
@@ -224,6 +226,7 @@ foreach my $issue (@issues) {
 	    print "</li>\n";
 
 	}
+
 	print "</ul>";
 
 	print "</li></ul>\n"; # close JIRA
@@ -259,7 +262,7 @@ sub getRelations {
 	$rv .= "<ul>\n";
 	$blocks_end = "</ul>\n";
       }
-      
+
       foreach my $linked (@issuelinks) {
 	# we don't know if it inward or outward without checking for the key
 	# and we can't check for the key if it isn't a hashref
@@ -293,10 +296,9 @@ sub getRelations {
       }
 
       $rv .= $blocks_end;
-      
+
     }
   $rv .= "\n=== END getRelations ===\n" if $debug;
 
   return $rv;
 }
-   
