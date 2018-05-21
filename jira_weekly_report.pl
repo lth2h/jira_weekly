@@ -43,6 +43,8 @@ my ($rss_file, $write_rss, $write_rss_only);
 my $yorn;
 my $fdate;
 
+my $last_item = 0;
+
 GetOptions(
 	   "verbose" => \$verbose,
 	   "quiet" => \$quiet,
@@ -162,7 +164,7 @@ if ( -e "./jira_get_last_report_date.pl") {
 
   # print Dumper \%lr_yh;
 
-  my $last_day = $lr_yh{"max_day"};
+  my $last_day = $lr_yh{"max_day"}; 
   my $last_mo  = $lr_yh{"max_mo"};
   my $last_yr  = $lr_yh{"max_yr"};
   my $last_key = $lr_yh{"max_key"};
@@ -320,7 +322,8 @@ foreach my $entry (@entries) {
     print "is weekly report...Ignored:$ignored,Ignorelevel: $ignore_level\n";
     if ($ignored >= $ignore_level) {
       $range = "Includes items from $last_date" . $range;
-      last;
+      # last;
+      $last_item = 1;
     }
 
   }
@@ -434,6 +437,7 @@ foreach my $entry (@entries) {
   # push(@{$doneby{$title}}, $by);
   $doneby{$title}{$by}++;
 
+  if ($last_item) { last; }
   ## TODO: Move Done Tasks to Archived
 }
 
