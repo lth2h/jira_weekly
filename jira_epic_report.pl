@@ -73,6 +73,9 @@ my @project_leads = @{$yh{"projectleads"}};
 my @assignees = @{$yh{"assignees"}};
 my @excludeprojects = @{$yh{"excludeprojects"}};
 
+my $trackfield = $yh{"customfields"}{"trackfield"};
+my $notrackmsg = $yh{"msgs"}{"nottracked"};
+
 # first get epics...
 
 my $projectLeadByUser;
@@ -116,7 +119,6 @@ if ($test) {
 }
 print "JQL: $jql\n" if $debug;
 
-
 # $results is a hash with keys: start total max issues
 my $results = $jira->search_issues($jql, 0, 1000);
 
@@ -132,9 +134,6 @@ print Dumper \@issues if $debug;
 
 foreach my $issue (@issues) {
 
-    # note we are specifically interested in customfield_10900
-    # what we need...key fields->{description} fields->status->name fields->customefield_10008 (that's the actual title) fields->id
-
     print Dumper \$issue->{"fields"} if $debug;
 
     print "\n\n<h2>";
@@ -145,14 +144,14 @@ foreach my $issue (@issues) {
     print $issue->{"fields"}->{"status"}->{"name"};
     print ") ";
 
-    if ($issue->{"fields"}->{customfield_10900}) {
+    if ($issue->{"fields"}->{$trackfield}) {
 	print "<a href=\"";
-	print $issue->{"fields"}->{customfield_10900};
+	print $issue->{"fields"}->{$trackfield};
 	print "\">";
-	print $issue->{"fields"}->{customfield_10900};
+	print $issue->{"fields"}->{$trackfield};
 	print "</a>";
     } else {
-	print "NOT TRACKED!";
+	print $notrackmsg;
     }
 
     print "</P>\n";

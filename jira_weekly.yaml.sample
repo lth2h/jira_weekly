@@ -52,3 +52,13 @@ excludeprojects:
         - ThePROJECT
         - "Never Ending Project"
 
+msgs:
+   nottracked: This project is not tracked in our good project tracking software
+   triple:
+      - First
+      - Second
+      - Third
+
+customfields:
+   trackfield: customfield_99999
+   actualtitle: customfield__99998
