@@ -164,7 +164,7 @@ if ( -e "./jira_get_last_report_date.pl") {
 
   # print Dumper \%lr_yh;
 
-  my $last_day = $lr_yh{"max_day"}; 
+  my $last_day = $lr_yh{"max_day"};
   my $last_mo  = $lr_yh{"max_mo"};
   my $last_yr  = $lr_yh{"max_yr"};
   my $last_key = $lr_yh{"max_key"};
