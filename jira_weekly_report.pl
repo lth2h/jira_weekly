@@ -328,7 +328,9 @@ foreach my $entry (@entries) {
 
   }
 
+  # we don't care about linked issues
   next if ($title =~ m/linked \d* issues/);
+  next if ($title =~ m/removed the Link between/);
 
   if ($body) {
     $body = $hs->parse($body);
