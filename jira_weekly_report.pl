@@ -564,8 +564,6 @@ sub print_doneby {
 # print "\n########\n";
 # print Dumper \%actions;
 
-#print Dumper \@foo;
-
 sub munge_title {
 
   my $title = shift;
@@ -584,9 +582,9 @@ sub munge_title {
 
   $title =~ s/$regex//;
 
-  # print "NEW TITLE(1): $title\n";
+  print "NEW TITLE(1): $title\n" if $debug;
   my $staff1 = $1;
-  # print "DOLLAR1: \"$staff1\", STAFF: " . $staff{$staff1} . "\n" unless $staff1 eq "";
+  print "DOLLAR1: \"$staff1\", STAFF: " . $staff{$staff1} . "\n" if (($debug) && ($staff1 ne ""));
 
   if (!$staff1) {
     # panic and try to guess the staff
@@ -606,7 +604,7 @@ sub munge_title {
   }
 
   print "GUESS FOR STAFF{STAFF1}:" . $staff{$staff1} . "\n" if $debug;
-  # print "NEW TITLE(1): $title\n";
+  print "NEW TITLE(2): $title\n" if $debug;
 
   # action
 
@@ -614,9 +612,9 @@ sub munge_title {
   my $action = $1;
   if ($action =~ m/changed the Summary of/) {
     # need to remove the first 'to' from the title
-    # print "Summary change\n" if $debug;
+    print "Summary change\n" if $debug;
     $title =~ s/([A-Z]*-[0-9]*)\s*to.*?'(.*)'/$1 - $2/;
-    # print "New Title (Summary Change): $title\n" if $debug;
+    print "New Title (Summary Change): $title\n" if $debug;
   }
 
   $title =~ s/with a resolution of '(.*)'//;
@@ -639,26 +637,17 @@ sub munge_title {
 
   }
 
-  ## Need to deal with this case:
-  ##Munging Title: 'Staff Name changed the status to Done on       PROJECT-2 - Task Description    with a resolution of 'Incomplete''##
-  # NEW TITLE(1):  changed the status to Done on       PROJECT-2 - Task Description   with a resolution of 'Incomplete'
-  # ACTION:  changed the status to Done on
-  # RESOLUTION: Incomplete
-  # don't really want them appearing in the done list, but they do need to be archvied.  Maybe use jira_get_old_done.pl
-
-  # print "ACTION: $action\n";
-  # print "RESOLUTION: $resolution\n" if $resolution;
-  # print "TIME SPENT: $timespent\n" unless !$timespent;
-
   # remove trailing whitespace
 
   $title =~ s/\s*$//;
 
   my ($key) = $title =~ m/([A-Z0-9]+-[0-9]+)/;
 
-  # print "##Returning Munged Title##\n\n";
-  # print "\tTitle: $title\n";
-  # print "\tSTAFF1: $staff1\n";
+  print "##Returning Munged Title##\n\n" if $debug;
+  print "\tTitle: $title\n" if $debug;
+  print "\tSTAFF1: $staff1\n" if $debug;
+  print "\tRESOLUTION: $resolution\n" if $debug;
+  print "\tKEY: $key\n" if $debug;
 
   return ($title,$staff{$staff1},$action,$resolution,$key);
 
