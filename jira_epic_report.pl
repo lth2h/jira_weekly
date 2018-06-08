@@ -117,12 +117,16 @@ if ($test) {
     $jql = "type = epic AND project = \"Test Project\"";
 
 }
+
 print "JQL: $jql\n" if $debug;
 
 # $results is a hash with keys: start total max issues
 my $results = $jira->search_issues($jql, 0, 1000);
 
 print Dumper \$results if $debug;
+
+print "Total Results: " . $results->{"total"} if $verbose;
+if ($results->{"total"} == 0) { print "NO RESULTS!"; exit; }
 
 # we really only care about what is in the issues field
 # @issues is an array of hashes in the "jira hash format"
