@@ -17,7 +17,7 @@ my $show_done;
 my $bold_block;
 # my $blocks_only; this requires relying on jql instead of what comes out of the issuelinks from the epic
 # JQL: issue in linkedIssues("TP-3", "blocks")
-my ($no_issues, $no_related, $no_jira);
+my ($no_issues, $no_related, $no_jira, $no_desc);
 
 my $jql;
 
@@ -35,6 +35,7 @@ GetOptions(
     "no-issues" => \$no_issues,
     "no-related" => \$no_related,
     "no-jira" => \$no_jira,
+    "no-description" => \$no_desc,
 );
 
 if ($no_jira) {
@@ -160,7 +161,13 @@ foreach my $issue (@issues) {
 
     print "</P>\n";
 
-    print "<P>" . $issue->{"fields"}->{"description"} . "</P>\n" unless (!$issue->{"fields"}->{"description"});
+    # deal with wide chars
+    my $str1;
+    $str1 = "<P>" . $issue->{"fields"}->{"description"} . "</P>\n" unless ((!$issue->{"fields"}->{"description"}) || ($no_desc));
+    if ($str1) {
+      $str1 =~ s/[^[:ascii:]]+//g;
+      print $str1;
+    }
 
     my @comments = @{$jira->get_issue_comments($issue->{"key"})};
     print Dumper \@comments if $debug;
