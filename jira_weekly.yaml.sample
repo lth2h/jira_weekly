@@ -1,6 +1,8 @@
 ---
 username: myusername
 password: mypassword
+api_token: reallylongimpossibletoremembermachinegeneratedstring
+api_user: uid@example.com
 
 staff:
   "John Doe": "JD"

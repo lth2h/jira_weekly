@@ -1,7 +1,19 @@
 #!/usr/bin/perl
 
+#######
 # TODO: --no-sub
 #       --group-by-sub=done --group-by-sub=active
+# Change to use API token by June 3, 2019
+
+# Use an API token
+# A primary use case for API tokens is to allow scripts to access REST APIs for Atlassian Cloud applications using HTTP basic authentication.
+
+# Depending on the details of the HTTP library you use, simply replace your password with the token. For example, when using curl, you could do something like this:
+
+# curl -v https://mysite.atlassian.net --user me@example.com:my-api-token
+# Note that me@example.com here is the email address for the Atlassian account you're using to create the token.
+
+#######
 
 # use jira_archive.pl to archive and create the Weekly Report task.
 
