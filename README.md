@@ -9,6 +9,7 @@ Files:
 - jira_get_last_report_date.pl -- guesses the date of the last "Weekly Report"
 - jira_epic_report.pl -- extracts a report based on epics.
 - get-issue-links.pl -- Prints the issuelinks hash from results->issues->fields->issuelinks
+- yaml_display.pl -- shows a nice view of what's in your jira_weekly.yaml file.
 
 Might possibly need to install some extra Perl Modules including but not limited to:
   - JIRA::Client::Automated
