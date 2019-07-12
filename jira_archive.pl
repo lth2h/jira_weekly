@@ -53,8 +53,8 @@ $yaml = read_file("jira_weekly.yaml");
 
 my %yh = %{Load($yaml)};
 
-my $username = $yh{"username"};
-my $password = $yh{"password"};
+my $username = $yh{"api_user"};
+my $password = $yh{"api_token"};
 my $jira_domain = $yh{"jira_domain"};
 
 if ($test) {
