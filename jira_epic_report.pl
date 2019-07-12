@@ -18,7 +18,7 @@ my $bold_block;
 # my $blocks_only; this requires relying on jql instead of what comes out of the issuelinks from the epic
 # JQL: issue in linkedIssues("TP-3", "blocks")
 my ($no_issues, $no_related, $no_jira, $no_desc);
-
+my $show_jql;
 my $jql;
 
 GetOptions(
@@ -36,6 +36,7 @@ GetOptions(
     "no-related" => \$no_related,
     "no-jira" => \$no_jira,
     "no-description" => \$no_desc,
+    "show-jql" => \$show_jql,
 );
 
 if ($no_jira) {
@@ -61,8 +62,8 @@ my %yh = %{Load($yaml)};
 
 print Dumper \%yh if $debug;
 
-my $username = $yh{"username"};
-my $password = $yh{"password"};
+my $username = $yh{"api_user"};
+my $password = $yh{"api_token"};
 my $jira_domain = $yh{"jira_domain"};
 
 my $jca_url = "https://$jira_domain/";
@@ -119,7 +120,7 @@ if ($test) {
 
 }
 
-print "JQL: $jql\n" if $debug;
+print "JQL: $jql\n" if ($debug || $show_jql);
 
 # $results is a hash with keys: start total max issues
 my $results = $jira->search_issues($jql, 0, 1000);
