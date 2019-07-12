@@ -88,6 +88,7 @@ my $last_mo;
 my $last_yr;
 my $last_key;
 my $last_summary;
+my $last_report_date;
 
 if ( -e "./jira_get_last_report_date.pl") {
 
@@ -114,6 +115,7 @@ if ( -e "./jira_get_last_report_date.pl") {
   $last_yr  = $lr_yh{"max_yr"};
   $last_key = $lr_yh{"max_key"};
   $last_summary = $lr_yh{"max_summary"};
+  $last_report_date = "$last_mo/$last_day/$last_yr";
 
   print "Last report on $last_mo/$last_day/$last_yr: $last_key - $last_summary\n" unless $quiet;
 
@@ -251,7 +253,7 @@ foreach my $entry (@entries) {
   }
 
 if (!($range =~ m/Includes/)) {
-  $range = "Includes items from $last_date" . $range;
+  $range = "Includes items from $last_report_date" . $range;
 }
 
 ### THE ACTUAL REPORT ####
